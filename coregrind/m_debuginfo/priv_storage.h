@@ -587,6 +587,9 @@ struct _DebugInfoFSM
    Bool  have_rx_map; /* did we see a r?x mapping yet for the file? */
    Int   rw_map_count; /* count of w? mappings seen (may be > 1 )   */
    Bool  have_ro_map; /* did we see a r-- mapping yet for the file? */
+#if defined(VGO_darwin)
+   Addr dyld_cache;   /* Address of the code in the dyld cache, override the above */
+#endif
 };
 
 

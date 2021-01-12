@@ -61,6 +61,10 @@ DiImage* ML_(img_from_local_file)(const HChar* fullpath);
 
 DiImage* ML_(img_from_fd)(Int fd, const HChar* fullpath);
 
+/* Create an image from memory.  Returns NULL
+   if it fails, for whatever reason. */
+DiImage* ML_(img_from_memory)(Addr addr, SizeT size, const HChar * fullpath);
+
 /* Create an image by connecting to a Valgrind debuginfo server
    (auxprogs/valgrind-di-server.c).  |filename| contains the object
    name to ask for; it must be a plain filename, not absolute, not a

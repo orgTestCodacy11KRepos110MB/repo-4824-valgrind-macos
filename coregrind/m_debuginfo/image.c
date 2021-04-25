@@ -90,9 +90,11 @@ typedef
       // (that is, using a debuginfo server; hence when is_local==False)
       // Session ID allocated to us by the server.  Cannot be zero.
       ULong session_id;
+#if DARWIN_VERS >= DARWIN_11_00
       // The following fields are only valid when using in-memory files
       // (that is, using macOS dyld cache; hence when is_local==True && fd==-1)
       void* addr;
+#endif
    }
    Source;
 
@@ -586,12 +588,16 @@ static void set_CEnt ( const DiImage* img, UInt entNo, DiOffT off )
 
    if (img->source.is_local) {
       // Simple: just read it
+#if DARWIN_VERS >= DARWIN_11_00
       if (img->source.fd == -1) {
-        VG_(memcpy)(&ce->data[0], &(((const char *)img->source.addr)[off]), len);
+        VG_(memcpy)(&ce->data[0], ((const char *)img->source.addr) + off, len);
       } else {
-      SysRes sr = VG_(pread)(img->source.fd, &ce->data[0], (Int)len, off);
-      vg_assert(!sr_isError(sr));
+#endif
+        SysRes sr = VG_(pread)(img->source.fd, &ce->data[0], (Int)len, off);
+        vg_assert(!sr_isError(sr));
+#if DARWIN_VERS >= DARWIN_11_00
       }
+#endif
    } else {
       // Not so simple: poke the server
       vg_assert(img->source.session_id > 0);
@@ -950,6 +956,8 @@ DiImage* ML_(img_from_memory)(Addr addr, SizeT size, const HChar * fullpath)
    UInt entNo = alloc_CEnt(img, CACHE_ENTRY_SIZE, False/*!fromC*/);
    vg_assert(entNo == 0);
    set_CEnt(img, 0, 0);
+
+   // TODO: we could cache the whole thing instantly by just adding it to CE directly
 
    return img;
 }
